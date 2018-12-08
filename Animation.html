@@ -4,39 +4,10 @@
    <head>
      <script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
    </head>
-    <style>
-        body {
-            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-        }
-    
-        #chart {
-            max-width: 600px;
-            max-height: 400px;
-        }
-    </style>
 </head>
 
 <body>
-    <div id="chart"></div>
-    <script src="script.js"></script>
-    <script>
-        var lines = timelineChart();
-
-        function resize() {
-            if (d3.select("#chart svg").empty()) {
-                return;
-            }
-            lines.width(+d3.select("#chart").style("width").replace(/(px)/g, ""))
-                .height(+d3.select("#chart").style("height").replace(/(px)/g, ""));
-            d3.select("#chart").call(lines);
-        }
-
-        d3.csv("data.csv", function (data) {
-            d3.select("#chart").datum(data).call(lines);
-            d3.select(window).on('resize', resize);
-            resize();
-        });
-    </script>
+<script src="https://gist.github.com/pjsier/28d1d410b64dcd74d9dab348514ed256.js"></script>
 </body>
 
 </html>
