@@ -37,7 +37,7 @@ Visualize your retirement income  (an interactive chart) - Minsu
 
 # Interactive Part
 
-  <iframe src="./Animation9.html" frameborder="0" height="100%" width="100%"></iframe>
+  <iframe src="./Animation9.html" frameborder="0" height="100%"></iframe>
 
 
 
