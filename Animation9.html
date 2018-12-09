@@ -12,6 +12,29 @@
 					fill: #fff;
 					opacity: 0;
 				}
+				
+				.path {
+					stroke: #f89e35;
+					stroke-width: 3px;
+					fill: none;
+				}
+				
+				.ani_line {
+						fill: none;
+						stroke: green;
+						stroke-width: 5px;
+						stroke-dasharray: 550;
+						stroke-dashoffset:0;
+						animation: dash 5s linear infinite;
+				}
+				@keyframes dash{
+        from{
+            stroke-dashoffset: 600;
+        }
+        to{
+            stroke-dashoffset: 0;
+        }
+    }
 
 
 				#buttons {
@@ -52,7 +75,7 @@
 	<body>	
     <div style="width: 600px">
 	
-			<h3>How much do you need to save for your retirement?</h3>
+			<h3>Let me know your numbers, and see how much you should save to keep your standard of livings in retirement</h3>
 		
 			<p>Assumptions</P>
 			<p>retirement age: 65, Pre-retirement investment return: 6.5%, Inflation rate: 2.25%, Years in Retirement: 30</p>
@@ -125,17 +148,23 @@
 	var curSavings_msg = "Current Savings (US$): ";
 	var curSavings_width = 500;
 
+	var current_age;
+	var usr_hhIncome;
+	var usr_annSavings;
+	var cur_totSavings;
+
 
 	// Setting sliders
 	
-	// Slider #1 setting
+	// Slider #1 setting (Current Age)
 	var slider1 = d3.sliderHorizontal()
 		.min(30)
-		.max(65)
+		.max(64)
 		.step(1)
 		.width(curAge_width*0.8)
 		.displayValue(true)
 		.on("onchange", val => {
+			current_age = val;
 			msg = curAge_Msg + val;
 			d3.select("p#value1").text(msg);
 			console.log(msg);
@@ -149,7 +178,7 @@
 
 	group1.call(slider1);
 	
-	// Slider #2 setting
+	// Slider #2 setting (Household Income)
 	var slider2 = d3.sliderHorizontal()
 		.min(25000)
 		.max(300000)
@@ -157,6 +186,7 @@
 		.width(hhIncome_width*0.9)
 		.displayValue(true)
 		.on("onchange", val => {
+			usr_hhIncome = val;
 			msg = hhIncome_msg + val;
 			d3.select("p#value2").text(msg);
 			console.log(msg);
@@ -171,14 +201,15 @@
 	group2.call(slider2);
 	
 
-	// Slider #3 setting
+	// Slider #3 setting (Annual Savings)
 	var slider3 = d3.sliderHorizontal()
 		.min(0)
-		.max(200000)
-		.step(5000)
+		.max(100000)
+		.step(1000)
 		.width(annSavings_width*0.9)
 		.displayValue(true)
 		.on("onchange", val => {
+			usr_annSavings = val;
 			msg = annSavings_msg + val;
 			d3.select("p#value3").text(msg);
 			console.log(msg);
@@ -193,7 +224,7 @@
 	group3.call(slider3);
 
 
-	// Slider #4 setting
+	// Slider #4 setting (Current Savings)
 	var slider4 = d3.sliderHorizontal()
 		.min(0)
 		.max(300000)
@@ -201,18 +232,19 @@
 		.width(curSavings_width*0.9)
 		.displayValue(true)
 		.on("onchange", val => {
+	 		cur_totSavings = val;
 			msg = curSavings_msg + val;
 			d3.select("p#value4").text(msg);
 			console.log(msg);
 		});
 
-	var group3 = d3.select("div#slider4").append("svg")
+	var group4 = d3.select("div#slider4").append("svg")
 		.attr("width", curSavings_width)
 		.attr("height", slider_height)
 		.append("g")
 		.attr("transform", "translate(30,30)");
 
-	group3.call(slider4);
+	group4.call(slider4);
 
 
 
@@ -226,7 +258,7 @@
 	//Width and height of svg
 	var w = 600;
 	var h = 400;
-	var x_padding = 70;
+	var x_padding = 80;
 	var y_padding = 25;
 	
 	// axis min / max
@@ -275,17 +307,18 @@
 							.append("svg")
 							.attr("width", w)
 							.attr("height", h)
-							.attr("id", "chart");
+
 
 	svg_chart.append("rect")
 							.attr("x", 0)
 							.attr("y", 0)
 							.attr("width", w)
 							.attr("height", h)
-							.attr("fill", "lightgrey");
+							.attr("fill", "white");
 
 	
 	//	Bind data	
+	var line_chart = svg_chart.append("g").attr("id", "line");
 	var star = svg_chart.append("g").attr("id", "star").selectAll("circle").data(star_dataset);
 
 	
@@ -320,6 +353,10 @@
 	var star_key;   // "age"+"goal"    - parseInt(goal)
 	var star_dataset = [];
 	
+	var wealth_curve = [];
+	var totalLength;
+	var path;
+	
 	
 	d3.csv("./checkpoint2.csv", function(error, data) {
 	  if (error) throw error;
@@ -342,48 +379,93 @@
 //			radio_status = this.value;
 //		});
 	
+	
+		function getPolylineLength(polylineElement){
+				function dis(p,q){
+						return Math.sqrt((p.x-q.x)*(p.x-q.x) + (p.y-q.y)*(p.y-q.y));
+				}
+				var ps = polylineElement.points;
+				var n = ps.numberOfItems;
+				var len=0;
+				for(var i=1; i<n; i++){
+						len += dis(ps.getItem(i-1),ps.getItem(i));
+				}
+				return len;
+		}
 
 		d3.select("#go").on("click", function(){
+			current_age = slider1.value();
+			usr_hhIncome = slider2.value();
+			usr_annSavings = slider3.value();
+			cur_totSavings = slider4.value();
+			
 			console.log("go.");
 			console.log("Go button is clicked");
 			console.log("Current age:", slider1.value());
 			console.log("Household income:", slider2.value());
-			console.log("Annual savings:", slider3.value());
+			console.log("Annual savings:", slider4.value());
 			console.log("Current total savings:", slider4.value());
 			
-			current_age = slider1.value();
+			// Calculate the goal ("star")
 			n = retirement_age - current_age;
-			var usr_hhIncome = slider2.value();
-			var usr_annSavings = slider3.value();
 			var key = parseInt(String(slider1.value())+String(slider2.value()));
 			req_ann_savings = usr_hhIncome * req_ann_savings_ratio;
 			req_cur_savings = map[key]*usr_hhIncome;
 			
 			goal = req_cur_savings * Math.pow( 1 + req_ann_savings_ratio, n) +
 							(req_ann_savings * (1+req_ann_savings_ratio) * ((Math.pow( 1+req_ann_savings_ratio, n )-1) / req_ann_savings_ratio));
+							
+			
+			// Calculate a personal wealth curve
+			wealth_curve = [];
+			wealth_curve.push( [current_age, cur_totSavings + usr_annSavings] );
+			for( i = 1; i <=n; i++ ) {
+				wealth_curve.push( [current_age+i, wealth_curve[i-1][1]*(1+inv_ret) + usr_annSavings] );
+			}
 						
 			console.log("Goal: " + goal);
-			
-			yScale.domain([ymin, goal * 1.3]);
-			yScale2.domain([ymin, goal * 1.3]);
+			console.log("Wealth_curve: " + wealth_curve);
 
+			// Draw a wealth curve for a user
+			var line = d3.line()
+				.x(function(d,i) {
+					return xScale(i+current_age) + x_padding;
+				})
+				.y(function(d) {
+					return yScale(d[1]) + y_padding;
+				})
+				
+			var r = Math.random();
+			yScale.domain([ymin, Math.max(goal, wealth_curve[wealth_curve.length-1][1]) * (1.2 + r/10)]);
+			yScale2.domain([ymin, Math.max(goal, wealth_curve[wealth_curve.length-1][1]) * (1.2 + r/10)]);
+
+			svg_chart.selectAll("path").remove();
 			
 			svg_chart.select("#yAxis")
 				.transition()
 				.duration(1000)
 				.call(yAxis)
 				.transition()
-				.duration(500)
+				.duration(500);
 
 			svg_chart.select("#yAxis2")
 				.transition()
 				.duration(1000)
 				.call(yAxis2)
 				.transition()
-				.duration(500)
+				.duration(500);
 			
-			star_dataset[0] = xScale(65);
-			star_dataset[1] = yScale(goal);
+
+			path = d3.select("#line").append("path")
+				.transition()
+				.duration(1000)
+				.attr("d", line(wealth_curve))
+				.attr("class", "ani_line")
+				.attr("id", "path")
+				.transition()
+				.duration(500);
+
+
 			update()
 			
 		});
@@ -391,30 +473,22 @@
 
 		//    Update stats function
 		function update() {
-				star_key = String(current_age) + String(parseInt(goal));
-		
-				svg_chart.select("#star").data(star_dataset)
-						.append("circle")
-						.attr("id", star_key)
-						.attr("cx", xScale(65))
-						.attr("cy", yScale(goal))
-						.attr("r", 1)
-						.transition()
-						.duration(1000)
-						.attr("r", 10)
-						.attr("fill", "red")
-		
-		}
+			star_key = String(current_age) + String(parseInt(goal));
 	
-		//    Click behavior			
-		svg_chart.select("rect").on("click", function(d, i) {
-			console.log("mouse clicked");
+			svg_chart.selectAll("circle").remove();
+			svg_chart.select("#star")
+					.append("circle")
+					.attr("id", star_key)
+					.attr("cx", xScale(65) + x_padding)
+					.attr("cy", yScale(goal) + y_padding)
+					.attr("r", 1)
+					.transition()
+					.duration(1000)
+					.attr("r", 10)
+					.attr("fill", "red");
 
-		});	
-		
+		}
 	});
-
-
 
 	
 
