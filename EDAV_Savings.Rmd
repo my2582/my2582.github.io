@@ -1,0 +1,205 @@
+---
+title: "EDAV project"
+author: "Jiaying Jin jj2980"
+date: "11/20/2018"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(ggthemes)
+```
+
+Retirement Landscape:
+
+"How many years do you think you will live after retirement? How are you going to finance yourslef/ your household after retirement for those years?"
+
+When presenting with those questions, many people have misconceptions. Common ones include - Some people underestimated their life expectancy thus do not prepare enough money to support similar living standard after retirement; Some people overestimated their working ability, thinking they will continue to work after retirement (age 65) while only 23% did.
+
+```{r fig.height = 5, fig.width = 8}
+
+library(reshape2)
+library(scales)
+
+setwd("/Users/jinjiaying/Desktop/CU/DSI/STAT 5702 Exploratory data analysis: visualization/final project")
+Flife <- read_csv("PerLifeTables_F_Alt2_TR2018.csv")
+Mlife <- read_csv("PerLifeTables_M_Alt2_TR2018.csv")
+
+#q(x) in the original file means the probability that a person exact age x will die within one year
+
+Flife1 <- subset(Flife, subset = (x %in% c(75,80,85,90,95,100) & Year == 2018) , select=c(x, cNotdie))
+Mlife1 <- subset(Mlife, subset = (x %in% c(75,80,85,90,95,100) & Year == 2018) , select=c(x, cNotdie))
+colnames(Mlife1)[colnames(Mlife1)=="cNotdie"] <- "Men"
+colnames(Flife1)[colnames(Flife1)=="cNotdie"] <- "Women"
+combine  <- merge(Flife1, Mlife1, by="x")
+combine$Couple <- 1 - (1 - combine$Men) * (1- combine$Women)
+
+combine <- melt(combine, id.vars='x')
+
+ggplot(combine, aes(x=factor(x), y=value, fill=variable)) +
+    geom_bar(stat='identity', position='dodge') + xlab("Age") + ylab("Percent")+ ggtitle("The probability of living to a certain age or beyond at year 65 today") + geom_text(aes(label= scales::percent(value, accuracy=1)), position=position_dodge(width=0.9), vjust=-0.2)+ scale_y_continuous(labels = scales::percent_format(accuracy = 1)) + theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=16, hjust=0))
+
+```
+
+
+This is a projected period life tables by single year of age, gender, and calendar year for years 2016-2095
+Chart: Social Security Administration, Period Life Table, 2016(published in 2018) 
+https://www.ssa.gov/oact/HistEst/PerLifeTables/2018/PerLifeTables2018.html
+
+A woman is 84% likely to live to age 75 and beyond and 52% of chance to live till age 85 and beyond.
+The chances for couples to live till 75 and beyond and 85 and beyond is as high as 96% and 89%! 
+With time being, people's life expectancy is incresing.What would you live on for those 15+ years after retirement? Do you care how much money you would like to have in your bank account at retirement to make sure you have the same living standard until 80, 90 or even 100 years old?
+The most obvious answer is saving, but have you saved enough now? Below we present a visualization of how much saving one needs at different age and different household income level to check how well one has saved.
+
+
+```{r fig.width = 12, fig.height= 14}
+library(dplyr)
+
+#retire_checkpoint.csv contains a table about how much money one needs to have at certain age and income level, calculated from checkpoint table provided by Business Insider
+
+ckpt <- read_csv("retire_checkpoint.csv")
+head(ckpt)
+ckpt_new <- melt(ckpt, id.vars='age', variable.factor = FALSE)
+
+ggplot(ckpt_new, aes(x=factor(age), y=value, color=variable)) +
+    geom_line(aes(group=variable)) + geom_point()+ xlab("Age") + ylab("$ needed for retirement")+ ggtitle("Do you have enough money now for retirement?") + scale_y_continuous( labels = scales::comma) + scale_color_discrete(name = "current income level") + geom_text(aes(label= scales::comma(value, accuracy=1)), position=position_dodge(width=0.7), vjust=-0.2) + theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14, hjust=0))
+
+```
+
+
+Retirement checkpoint data : https://www.businessinsider.com/retirement-savings-guide-2014-3
+
+Line charts with multiple annual income levels to visualize the amount of saving needed at different ages are shown above. 
+The assumptions for this model is that pre-retirement investment return is 7%; post-retirement investment return is 5%; retirement age is 65; years in retirement is 30; wage growth rate is 2.5%; confidence level represented is 80% and assumed annual contribution rate is 5%.
+The higher one's current income is, the higher income multiplier is (income multiplier = savings needed/ current income) to maintain similar living standard at retirement. At relatively early age, lower income group is possible to have income multipler less than one, meaning it's manageable for those certain people to have saving less than annual income. However, at higher end of age group, the income multipliers are all bigger than one, meaning that people need to have savings more than their annual income.
+
+
+
+```{r fig.width = 12, fig.height = 6}
+
+NIPA <- read_csv("personal_income_NIPA_hist.csv")
+
+# Summarized a list of years of recession and expansion from NBER chronology data https://www.nber.org/cycles.html and saved the summarized version in Recesssion.csv
+
+Ryr <- read_csv("Recession.csv")
+
+# Categorize years as R (recession) and E (expansion)
+
+NIPA <- NIPA %>% mutate(cycle = if_else((Year %in% Ryr$R), "Recession", "Expansion"))
+
+ggplot(NIPA, aes(x=Year, y=saving_pct, fill = cycle)) +
+  geom_col()+scale_x_continuous(breaks = scales::pretty_breaks(n =30))+
+  ylab("percentage") + ggtitle("Saving as percentage of disposable income") + theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=16, hjust=0))+ geom_hline(aes(yintercept = mean(saving_pct)), linetype = "dashed", colour = "blue") +geom_text(aes(x=mean(Year), y=mean(saving_pct)),label= "Mean = 8.31", vjust = -3, hjust = -1, size=4)
+
+
+
+```
+
+This chart visualizes U.S. personal saving as percentage of personal disposable income in the past 60 years, with data from Bureau of Economic Analysis, National Accounts NIPA archive - https://apps.bea.gov/histdata/fileStructDisplay.cfm?HMI=7&DY=2018&DQ=Q1&DV=Second&dNRD=May-31-2018
+business cycle: https://www.nber.org/cycles.html (source: National Bureau of Economic Research)
+
+The trend of U.S. personal saving as percentage of disposable income was as high as 10-12% during 1958-1984, then dropped gradually to ~3% in 2005-2007 era. The saving rate rebounded due to financial crisis but dropped back again in 2017.
+
+The average saving rate in past 60 years is 8.31%. Currently in year 2018, we are at one of the lowest saving rate historically.
+
+People's saving rate tends to increase in recession comparing to end of previous expansion and decrease in expansion comparing to end of previous recession. The reason behind is that during recession, unemployment increases, GDP growth rate decreases, people reduce their spending to prepare for recession, cutting out spending on durable goods and save more money, thus saving rate tends to increase. However, during expansion, everything seems to be promising, people hav tendency to assume their income level will grow at same rate in the next 30 years and tend to calculate less on spending. In addition, inflation rate increases during expansion, which means one dollar will worth much less tomorrow than today and than in recession. Thus, people are willing to spend more now due to time value of money. To have enough money to transit into retirement life with same living standard, one good way is to save. To beat the inflation with time being, investing using saved money is a best way. 
+
+```{r fig.width = 10, fig.height=8}
+library(dplyr)
+library(choroplethr)
+library(usmap)
+
+PCE2016 <- read.csv("2016PCE.csv")
+PI2016 <- read.csv("2016PI.csv")
+
+#PI2016 contains filtered data originally from BEA is in thousands while PCE2016 original data is in millions
+
+PI2016 <- PI2016 %>% mutate(Personal_in_m_2016 = Personal_in_000_2016/1000) 
+
+#Merge PCE and PI according to GeoFIPS
+
+data2016 <- left_join(PI2016, PCE2016, by = "GeoFIPS") 
+
+data2016 <- data2016 %>% mutate(saving_pct = 1- Personal_ex_m_2016/Personal_in_m_2016) %>% mutate(fips = GeoFIPS/1000)
+
+new_data <-data2016[c(11,10)]
+
+plot_usmap(data=new_data, values = "saving_pct", lines = "red", labels = TRUE) +  
+  scale_fill_continuous(name = "Saving percentage",
+    low = "white", high = "red") + 
+  ggtitle("2016 saving as percentage of disposable income by state") +
+  theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=16, hjust=0))
+
+```
+
+
+The heatmap for estimated saving as percentage of disposable income by state shows the relative saving rate for different states within the U.S. for year 2016 (the latest year we have data so far). Since there is no official data for saving rate, it is esimated by (1 - Personal Consumption Expenditure by State/ State annual personal income). We focus on the relative comparison of saving rates across different states than the absolute number of saving rate in this section.
+We used data from BEA regional data - State annual personal income https://apps.bea.gov/regional/histdata/
+and Persnal Consumption Expenditure by State https://apps.bea.gov/regional/histdata/releases/1017pce/index.cfm
+Maine has lowest saving rate, followed by Montana, then New Mexico and West Virginia. Connecticut has the highest saving rate, followed by Wyoming and California.
+
+```{r fig.width = 12, fig.height = 6}
+calc <- read_csv("invest_save_calculation.csv")
+calc_new <- melt(calc, id.vars='Age', variable.factor = FALSE)
+calc_new[,'value'] = round(calc_new[,'value'],0)
+
+ggplot(calc_new, aes(x=Age, y=value, color=variable)) +
+    geom_line(aes(group=variable)) + ylab("$ ending portfolio") +  geom_text(position=position_dodge(0.9), aes(label=ifelse(Age %in% c("65", "50"), value,""))) + ggtitle("Benefit of saving and investing early")+theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=16, hjust=0))
+
+```
+
+The above chart shows benefit of investing and saving early.
+
+The assumptioin is as below: 
+Jason starts investing at age of 35; Marvin saves age 25-65; Sara invests age 25-65; Abby invests age 25-40 and saves 40-65; Alan saves 40-65; Assume investment return is 6% per year and saving return is 2.5% per year; 10000 is invested/saved annually.
+
+Sara obviously has the highest total asset at retirement for two reasons: 1) she starts investing as early as 25, and 2) she invests instead of saves, enabling her to have higher return on average. On the contrary, Alan has the lowest total asset at retirement as he starts saving later in life and did not take risk to invest.
+
+Interestingly, the ranking of total asset and growth is consistant before age of 60 but Jason surpassed Marvin and Abby after age 60. The reason is that, although Jason starts later, the higher return brought by investment surpasses the lower return from saving after certain time period. Another way of saying this is that the power of compounding beats the power of longer time period after certain amount of time.
+
+
+
+```{r fig.width = 12, fig.height = 6}
+impact <- read_csv("invest_and_withdrawal_impact.csv")
+impact <- subset(impact,select=c(age,Total_saving, saving_left))
+impact_new <- melt(impact, id.vars='age', variable.factor = FALSE)
+ggplot(impact_new, aes(x=age, y=value, color=variable)) +
+    geom_line(aes(group=variable)) +scale_y_continuous( labels = scales::comma) + ylab("$ ending portfolio") +geom_text(position=position_dodge(0.9), aes(label=ifelse(age == "65", value,"")))+ ggtitle("Harm of early withdrawal from annual investment")+theme(plot.title = element_text(family = "Trebuchet MS", color="#666666", face="bold", size=14, hjust=0))
+```
+
+Harm on total potential portfolio value of early withdrawal/ loan is shown in the above chart. Assume yearly contribution is 10000 and the contribution is purely investe in S&P 500 index age 25-65 (year 1979-2018). The blue line represents withdrawal of 2000 age 35-39 at end of year and withdrawl of 6000 age 50-52 end of year.
+The final portfolio value is 380000 less with only 2000*5 + 6000*3 = 28000 withdrawl within 40 years! 
+Being consistent and persistent in annually contribution when investing saved money for retirement is vital as with withdrawal you might miss great opportunities when stock market goes up thus damage your total return at retirement if you are a passive investor (instead of a professional stock investor)!
+
+-------------
+conclusion:
+
+With higher modern life expectancy, it is important to plan one's financial saving/ investment carefully in an early age. People tend to save less in economic expansion and save more in economic recession with average saving rate of 8.2% in past 60 years while current saving rate well below the historical average. Saving rates across states varied as well. Maine has lowest saving rate, followed by Montana, then New Mexico and West Virginia. Connecticut has the highest saving rate, followed by Wyoming and California.
+
+Saving/ investing at an early age is preferred for higher accumulated wealth at retirement. Investing at later age, while having higher risk, might outrun the benefit of saving at early age too. Consistency and persistency in saving/investment on regular basis is vital for retirement financial success too. Withdrawal at periods is possible to have huge negative impact on total portfolio amount if people miss out some good years of the market. 
+
+
+
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
