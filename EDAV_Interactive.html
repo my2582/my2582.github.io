@@ -40,6 +40,23 @@
 							stroke-dashoffset: 0;
 					}
     		}
+    		
+				.goal_line {
+					fill: none;
+					stroke: grey;
+					stroke-width: 2px;
+					stroke-dasharray: 550;
+					stroke-dashoffset:0;
+					animation: dash 5s linear;
+				}
+				@keyframes dash{
+					from{
+							stroke-dashoffset: 600;
+					}
+					to{
+							stroke-dashoffset: 0;
+					}
+    		}
 
 
 				#buttons {
@@ -89,7 +106,7 @@
 			<p>
 				<div class="curAge">
 				<form>
-						<label for="curAge">What age do you want to start to save for your retirement portfolio? (Year-old) </label>
+						<label for="curAge">What age do you want to start to save? (Year-old) </label>
 						<input type="range" min=30 max=64 step=1 id="slider1" value=40 oninput="curAge.value = slider1.value">
 						<output name="curAge" id="curAge">40</output>
 				</form>
@@ -189,7 +206,7 @@
 	var w = 600;
 	var h = 400;
 	var x_padding = 80;
-	var y_padding = 25;
+	var y_padding = 40;
 	
 	// axis min / max
 	var xmin = 25;
@@ -252,6 +269,7 @@
 	//	Bind data	
 	var line_chart = svg_chart.append("g").attr("id", "line");
 	var star = svg_chart.append("g").attr("id", "star").selectAll("circle").data(star_dataset);
+	var text_msg = svg_chart.append("g").attr("id", "text_msg").selectAll("text");
 
 	
 	//    Create axes
@@ -260,6 +278,7 @@
 							.attr("transform", `translate (${x_padding}, ${cy})`)
 							.attr("class", "axis")
 							.call(xAxis);
+
 								
 	var axes_y = svg_chart.append("g")
 							.attr("id", "yAxis")
@@ -272,6 +291,25 @@
 							.attr("transform", `translate (${rx}, ${y_padding})`)
 							.attr("class", "axis")
 							.call(yAxis2);
+
+	// Label the x axis.
+	var x_label_x = w/2;
+	
+	var x_label_y = h - 5;
+	svg_chart.append("text")
+						.attr("transform", `translate (${x_label_x}, ${x_label_y})`)
+						.style("text-anchor", "middle")
+						.text("Age (years)");
+
+
+	// Label the y axis.
+	svg_chart.append("text")
+						.attr("transform", "rotate(-90)")
+						.attr("y", x_padding/4)
+						.attr("x", 0 - (cy / 2))
+						.attr("dy", "1em")
+						.style("text-anchor", "middle")
+						.text("Value (in US$)");
 
 	var map = {};
 	var goal = 0;
@@ -291,6 +329,11 @@
 	var wealth_curve = [];
 	var totalLength;
 	var path;
+	
+	var msg_goal1 = "The red circle is your goal"
+	var msg_goal2 = "one required to meet"
+	var msg_goal3 = "your current standard of living"
+	var msg_goal4 = "in retirement."
 	
 	
 	d3.csv("./checkpoint2.csv", function(error, data) {
@@ -399,8 +442,7 @@
 				.attr("id", "path")
 				.transition()
 				.duration(500);
-
-
+			
 			update()
 			
 		});
@@ -421,6 +463,56 @@
 					.duration(1000)
 					.attr("r", 10)
 					.attr("fill", "red");
+
+
+			svg_chart.select("#msg_goal1").remove();
+			svg_chart.select("#msg_goal2").remove();
+			svg_chart.select("#msg_goal3").remove();
+			svg_chart.select("#msg_goal4").remove();
+			
+			svg_chart.append("text").attr("id", "msg1")
+					.transition()
+					.delay(500)
+					.attr("id", "msg_goal1")
+					.attr("x", xScale(30) + x_padding)
+					.attr("y", yScale(goal) + y_padding+5)
+					.text(msg_goal1 + ": " + "US$ " + d3.format(".2s")(goal) + ",")
+					
+			svg_chart.append("text")
+					.transition()
+					.delay(500)
+					.attr("id", "msg_goal2")
+					.attr("x", xScale(30) + x_padding)
+					.attr("y", yScale(goal) + y_padding+25)
+					.text(msg_goal2)
+					
+			svg_chart.append("text")
+					.transition()
+					.delay(500)
+					.attr("id", "msg_goal3")
+					.attr("x", xScale(30) + x_padding)
+					.attr("y", yScale(goal) + y_padding+45)
+					.text(msg_goal3)
+					
+			svg_chart.append("text")
+					.transition()
+					.delay(500)
+					.attr("id", "msg_goal4")
+					.attr("x", xScale(30) + x_padding)
+					.attr("y", yScale(goal) + y_padding+65)
+					.text(msg_goal4)
+			
+			var goal_line_data = [[56, goal], [63, goal]];
+
+			// Draw a wealth curve for a user
+			var goal_line = d3.line()
+				.x(function(d,i) {
+					return xScale(d[0]) + x_padding;
+				})
+				.y(function(d) {
+					return Math.min(yScale(d[1]) + y_padding, 150);
+				})
+
 
 		}
 	});
