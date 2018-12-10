@@ -1,7 +1,3 @@
----
-layout: default
----
-
 
 # Interactive Component
 ##### EDAV Project, Fall 2018.
