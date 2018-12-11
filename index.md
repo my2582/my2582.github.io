@@ -5,6 +5,6 @@
 
 
 
-<iframe src="./EDAV_Interactive.html" frameborder="0" height="1100" width="600"></iframe>
+<iframe src="./EDAV_Interactive.html" frameborder="0" height="1100" width="580"></iframe>
 
 
