@@ -102,7 +102,7 @@
 			<h3>Let me know your numbers, and see how much you want to save to keep your current standard of livings in retirement</h3>
 			<p>Assumptions</p>
 			<p>Retirement age: 65, Pre-retirement investment return: 6.5%, Inflation rate: 2.25%, Years in retirement: 30</p>
-			<p>The income replacement varies depending on household income. If your current household is income is low, your standard of living in retirement would be proportionally low; for higer income, higher standard of living.</p>
+			<p>The income replacement varies depending on household income. If your current household income is low, we assume your standard of living in retirement would be inevitably, proportionally lower; for higer income, higher standard of living. We take this into account in model.</p>
 
 			<p>
 				<div class="curAge">
@@ -311,6 +311,7 @@
 						.attr("dy", "1em")
 						.style("text-anchor", "middle")
 						.text("Value (in US$)");
+	
 
 	var map = {};
 	var goal = 0;
@@ -332,10 +333,12 @@
 	var totalLength;
 	var path;
 	
-	var msg_goal1 = "The red circle is your goal"
-	var msg_goal2 = ", the expected money required to meet"
-	var msg_goal3 = "your current standard of living"
-	var msg_goal4 = "in retirement."
+	var msg_goal1 = "The red circle is your goal";
+	var msg_goal2 = ", the expected money required to meet";
+	var msg_goal3 = "your current standard of living";
+	var msg_goal4 = "in retirement.";
+	var msg_goal5 = "The green curve is your wealth curve.";
+	var msg_goal6 = "It's values of your retirement portfolio.";
 	
 	
 	d3.csv("./checkpoint2.csv", function(error, data) {
@@ -474,16 +477,20 @@
 			svg_chart.select("#msg_goal2").remove();
 			svg_chart.select("#msg_goal3").remove();
 			svg_chart.select("#msg_goal4").remove();
+			svg_chart.select("#msg_goal5").remove();
+			svg_chart.select("#msg_goal6").remove();
 			svg_chart.select("#msg_pf").remove();
 			d3.select("#final_pf1").text("");
 			d3.select("#final_pf2").text("");
+			
+			var msg_y_min = Math.min(yScale(goal)*1.1 + y_padding+25, 100);
 			
 			svg_chart.append("text").attr("id", "msg1")
 					.transition()
 					.delay(500)
 					.attr("id", "msg_goal1")
 					.attr("x", xScale(30) + x_padding)
-					.attr("y", yScale(goal) + y_padding+5)
+					.attr("y", msg_y_min)
 					.text(msg_goal1 + ": " + "US$ " + d3.format(".2s")(goal))
 					
 			svg_chart.append("text")
@@ -491,7 +498,7 @@
 					.delay(1000)
 					.attr("id", "msg_goal2")
 					.attr("x", xScale(30) + x_padding)
-					.attr("y", yScale(goal) + y_padding+25)
+					.attr("y", msg_y_min + 20)
 					.text(msg_goal2)
 					
 			svg_chart.append("text")
@@ -499,7 +506,7 @@
 					.delay(1500)
 					.attr("id", "msg_goal3")
 					.attr("x", xScale(30) + x_padding)
-					.attr("y", yScale(goal) + y_padding+45)
+					.attr("y", msg_y_min + 40)
 					.text(msg_goal3)
 					
 			svg_chart.append("text")
@@ -507,8 +514,24 @@
 					.delay(2000)
 					.attr("id", "msg_goal4")
 					.attr("x", xScale(30) + x_padding)
-					.attr("y", yScale(goal) + y_padding+65)
+					.attr("y", msg_y_min + 60)
 					.text(msg_goal4)
+			
+			svg_chart.append("text")
+					.transition()
+					.delay(2500)
+					.attr("id", "msg_goal5")
+					.attr("x", xScale(30) + x_padding)
+					.attr("y", msg_y_min + 100)
+					.text(msg_goal5)
+					
+			svg_chart.append("text")
+					.transition()
+					.delay(3000)
+					.attr("id", "msg_goal6")
+					.attr("x", xScale(30) + x_padding)
+					.attr("y", msg_y_min + 120)
+					.text(msg_goal6)
 			
 			var msg_y = yScale(wealth_curve[wealth_curve.length-1][1]) + 30;
 			var goal_y = yScale(goal);
@@ -566,7 +589,7 @@
 					return xScale(d[0]) + x_padding;
 				})
 				.y(function(d) {
-					return Math.min(yScale(d[1]) + y_padding, 400);
+					return Math.min(yScale(d[1]) + y_padding, 500);
 				})
 
 
