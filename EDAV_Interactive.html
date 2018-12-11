@@ -100,13 +100,14 @@
     <div style="width: 600px">
     	
 			<h3>Let me know your numbers, and see how much you want to save to keep your current standard of livings in retirement</h3>
-			<p>Assumptions</P>
-			<p>retirement age: 65, Pre-retirement investment return: 6.5%, Inflation rate: 2.25%, Years in Retirement: 30</p>
+			<p>Assumptions</p>
+			<p>Retirement age: 65, Pre-retirement investment return: 6.5%, Inflation rate: 2.25%, Years in retirement: 30</p>
+			<p>The income replacement varies depending on household income. If your current household is income is low, your standard of living in retirement would be proportionally low; for higer income, higher standard of living.</p>
 
 			<p>
 				<div class="curAge">
 				<form>
-						<label for="curAge">What age do you want to start to save? (Year-old) </label>
+						<label for="curAge">What age do you want to start to save from? (Year-old) </label>
 						<input type="range" min=30 max=64 step=1 id="slider1" value=40 oninput="curAge.value = slider1.value">
 						<output name="curAge" id="curAge">40</output>
 				</form>
@@ -141,7 +142,7 @@
 			</p>
 			<p>
 				<div id="buttons">
-					<div class="button" id="go" value="go">Go<span class="fa fa-caret-right"></span></div>
+					<div class="button" id="go" value="go">Go</div>
 				</div>
 			</p>
 		
@@ -322,6 +323,7 @@
 	var inv_ret = 0.065;      // The expected return for your investment from today to retirement.
 	var req_ann_savings_ratio = 0.05;  // The required percentage of your household income to save in order to meet your Goal(star).
 	var retirement_age = 65;
+	var infl_rate = 0.025;
 	
 	var star_key;   // "age"+"goal"    - parseInt(goal)
 	var star_dataset = [];
@@ -331,7 +333,7 @@
 	var path;
 	
 	var msg_goal1 = "The red circle is your goal"
-	var msg_goal2 = "one required to meet"
+	var msg_goal2 = ", the expected money required to meet"
 	var msg_goal3 = "your current standard of living"
 	var msg_goal4 = "in retirement."
 	
@@ -383,6 +385,9 @@
 			console.log("Household income:", usr_hhIncome);
 			console.log("Annual savings:", usr_annSavings);
 			console.log("Current total savings:", cur_totSavings);
+			
+			svg_chart.select("#final_pf1").remove();
+			svg_chart.select("#final_pf2").text(" ");
 			
 			// Calculate the goal ("star")
 			n = retirement_age - current_age;
@@ -469,6 +474,9 @@
 			svg_chart.select("#msg_goal2").remove();
 			svg_chart.select("#msg_goal3").remove();
 			svg_chart.select("#msg_goal4").remove();
+			svg_chart.select("#msg_pf").remove();
+			d3.select("#final_pf1").text("");
+			d3.select("#final_pf2").text("");
 			
 			svg_chart.append("text").attr("id", "msg1")
 					.transition()
@@ -476,11 +484,11 @@
 					.attr("id", "msg_goal1")
 					.attr("x", xScale(30) + x_padding)
 					.attr("y", yScale(goal) + y_padding+5)
-					.text(msg_goal1 + ": " + "US$ " + d3.format(".2s")(goal) + ",")
+					.text(msg_goal1 + ": " + "US$ " + d3.format(".2s")(goal))
 					
 			svg_chart.append("text")
 					.transition()
-					.delay(500)
+					.delay(1000)
 					.attr("id", "msg_goal2")
 					.attr("x", xScale(30) + x_padding)
 					.attr("y", yScale(goal) + y_padding+25)
@@ -488,7 +496,7 @@
 					
 			svg_chart.append("text")
 					.transition()
-					.delay(500)
+					.delay(1500)
 					.attr("id", "msg_goal3")
 					.attr("x", xScale(30) + x_padding)
 					.attr("y", yScale(goal) + y_padding+45)
@@ -496,11 +504,59 @@
 					
 			svg_chart.append("text")
 					.transition()
-					.delay(500)
+					.delay(2000)
 					.attr("id", "msg_goal4")
 					.attr("x", xScale(30) + x_padding)
 					.attr("y", yScale(goal) + y_padding+65)
 					.text(msg_goal4)
+			
+			var msg_y = yScale(wealth_curve[wealth_curve.length-1][1]) + 30;
+			var goal_y = yScale(goal);
+			
+			if( goal_y - msg_y < 80 ) {
+					msg_y = yScale(wealth_curve[wealth_curve.length-1][1]) - 40;
+			}
+			
+			var final_msg2 = "";
+			svg_chart.append("text")
+					.transition()
+					.delay(3000)
+					.attr("id", "msg_pf")
+					.attr("x", xScale(65)+30)
+					.attr("y", yScale(wealth_curve[wealth_curve.length-1][1]) + 30)
+					.text("US$ " + d3.format(".2s")(wealth_curve[wealth_curve.length-1][1]))
+			
+			d3.select("#final_pf1")
+					.transition()
+					.delay(3000)
+					.text("... and you will have... US$ " + d3.format(".2s")(wealth_curve[wealth_curve.length-1][1]) + " at your retirement.");
+
+			var pf_value = wealth_curve[wealth_curve.length-1][1];
+			var diff = pf_value - goal;
+			
+			var ann_sav = (-diff*inv_ret)/((Math.pow(1+inv_ret,n))-1);
+			
+			if( Math.abs(diff) <= 10000 ) {
+				// met
+				final_msg2 = "We expect that your retirement portfolio would meet the goal. You would probably not be in financial trouble.";
+			}
+			else if ( diff < -10000 && diff >= -100000)  {
+				// will be in trouble
+				final_msg2 = "You many want to make serious plans to additionally save US$ " + d3.format(".2s")(ann_sav) + " per annum to fill the shortage of US$ " + d3.format(".2s")(-diff) + " (" + d3.format(".2s")(goal) + " - "  + d3.format(".2s")(pf_value) +")";
+			}
+			else if ( diff < -100000 )  {
+				// will be in serious trouble
+				final_msg2 = "You want to make really serious plans to additionally save US$ " + d3.format(".2s")(ann_sav) + " per annum to fill the shortage of US$ " + d3.format(".2s")(-diff) + " (" + d3.format(".2s")(goal) + " - " + d3.format(".2s")(pf_value) +")";
+			}
+			else {
+				// fine
+				final_msg2 = "You should be fine as your retirement portfolio would exceed the required money by US$ " + d3.format(".2s")(diff);
+			}					
+			d3.select("#final_pf2")
+					.transition()
+					.delay(4000)
+					.text(final_msg2);
+
 			
 			var goal_line_data = [[56, goal], [63, goal]];
 
@@ -510,7 +566,7 @@
 					return xScale(d[0]) + x_padding;
 				})
 				.y(function(d) {
-					return Math.min(yScale(d[1]) + y_padding, 150);
+					return Math.min(yScale(d[1]) + y_padding, 400);
 				})
 
 
@@ -520,7 +576,11 @@
 	
 
 </script>
-		
+		<p>
+			<text id="final_pf1"></text><br>
+			
+			<text id="final_pf2"></text><br>
+		</p>
 	</body>
 	
 </html>
