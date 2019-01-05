@@ -1,16 +1,8 @@
 # Retirement Calculator my2582.github.io
 Exploratory Data Analysis & Vasualization (EDAV) Project, Fall 2018, Columbia University - av2354_jj2980_my2582
 
-I wrote an interactive chart using D3, and made it publically accessible at [here](https://my2582.github.io). A screenshot of the interactive chart is as below :
-
-![A screenshot](./Screenshot.png)
-
-
+I wrote an interactive chart using D3, and made it publically accessible at [here](https://my2582.github.io).
 A full report can be found at [here](https:my2582.github.io/Report_All_from Google Docs.pdf).
-
-
-
-
 
 
 # Questions that the calculator answers
