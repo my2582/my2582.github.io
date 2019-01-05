@@ -3,7 +3,7 @@ Exploratory Data Analysis & Vasualization (EDAV) Project, Fall 2018, Columbia Un
 
 I wrote an interactive chart using D3, and made it publically accessible at [here](https://my2582.github.io). A screenshot of the interactive chart is as below :
 
-[A screenshot](./Screenshot.png)
+![A screenshot](./Screenshot.png)
 
 
 A full report can be found at [here](https:my2582.github.io/Report_All_from Google Docs.pdf).
@@ -16,18 +16,14 @@ A full report can be found at [here](https:my2582.github.io/Report_All_from Goog
 # Questions that the calculator answers
 - Based on your age and Household Income(HHI), how much do you need to save for a comfortable retirement.
 - Given your current rate of savings, what is your shortfall dollar amount at retirement, and how much more do you need to save annually to meet your goal.
-  
 - How much better off you would be, in dollar terms, if you start investing sooner rather than later.
   
 
 # What the tool computes
 We mainly calculated data based on our expertise in finance. This interactive component computed :
-
-  ● Total amount of money needed at retirement.
-  
-  ● A wealth curve; this is a total value of your retirement portfolio from an input age until retirement.
-  
-  ● Retirement checkpoints; this is the only external data used in this component. This table takes inputs of age and household income and outputs a required amount of money you should have today to meet your current standard of living in retirement.
+- Total amount of money needed at retirement.
+- A wealth curve; this is a total value of your retirement portfolio from an input age until retirement.
+- Retirement checkpoints; this is the only external data used in this component. This table takes inputs of age and household income and outputs a required amount of money you should have today to meet your current standard of living in retirement.
 
 
 # How does it work?
