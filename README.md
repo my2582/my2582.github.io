@@ -1,7 +1,19 @@
 # Retirement Calculator my2582.github.io
 Exploratory Data Analysis & Vasualization (EDAV) Project, Fall 2018, Columbia University - av2354_jj2980_my2582
 
-I wrote an interactive chart using D3, and made it publically accessible at [here](https://my2582.github.io){:target="_blank"}. A full report is found at [here](https:my2582.github.io/Report_All_from Google Docs.pdf){:target="_blank"}.
+I wrote an interactive chart using D3, and made it publically accessible at [here](https://my2582.github.io).
+
+A screenshot of the interactive chart is as below :
+
+http://my2582.github.io/Screenshot.png
+
+
+A full report can be found at [here](https:my2582.github.io/Report_All_from Google Docs.pdf).
+
+
+
+
+
 
 # Questions that the calculator answers
   ● Based on your age and Household Income(HHI), how much do you need to save for a comfortable retirement.
