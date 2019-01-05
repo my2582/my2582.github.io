@@ -5,7 +5,7 @@ I wrote an interactive chart using D3, and made it publically accessible at [her
 
 A screenshot of the interactive chart is as below :
 
-http://my2582.github.io/Screenshot.png
+[A screenshot](./Screenshot.png)
 
 
 A full report can be found at [here](https:my2582.github.io/Report_All_from Google Docs.pdf).
