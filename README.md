@@ -32,3 +32,7 @@ We take four values as inputs: age, household income, annual savings, and curren
 Once a user clicks the start button, the component plots a red circle. This is the required amount of money to meet your standard of living in retirement. Let me call value the goal through section. Then, a green line is gradually plotted. This is an expected value of your retirement portfolio, or “wealth curve”.
 
 You will rely on this, and you should expect the wealth curve to hit the goal at an age of 65, implying that you would enjoy your life without financial difficulties! By introducing animation on this wealth curve, we expect that users can get some excitement (or disappointment) that it would hit the goal or now while it is being drawn. Finally, users can decode the numbers shown on the chart because we explain it. User-friendly texts are shown to go over the result.
+
+
+## A screenshot
+![chart](chart_screenshot.png)
